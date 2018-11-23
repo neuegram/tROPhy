@@ -3,9 +3,9 @@ package executable
 import (
 	"bufio"
 	"debug/elf"
-	"fmt"
-	"github.com/bnagy/gapstone"
 	"io"
+
+	"github.com/bnagy/gapstone"
 )
 
 //type Executable interface {
@@ -35,16 +35,16 @@ func Parse(in string) ([]BasicBlock, error) {
 	if _, err := reader.Read(buf); err != nil && err != io.EOF {
 		panic(err)
 	}
-	Disassemble(&buf)
+	blocks := Disassemble(&buf)
 
-	return nil, nil
+	return blocks, nil
 
 }
 
 func isControlFlowInstruction(instruction *gapstone.Instruction) bool {
 	for group := range instruction.Groups {
 		if group == gapstone.ARM_GRP_JUMP {
-			fmt.Println("ARM_GRP_JUMP")
+			// fmt.Println("ARM_GRP_JUMP")
 			return true
 		}
 	}
@@ -52,15 +52,17 @@ func isControlFlowInstruction(instruction *gapstone.Instruction) bool {
 	// range keyword was not working here
 	for i := 0; i < len(instruction.Arm.Operands); i++ {
 		if instruction.Arm.Operands[i].Reg == gapstone.ARM_REG_PC {
-			fmt.Println("ARM_REG_PC")
-			return true
+			// fmt.Println("ARM_REG_PC")
+			// return true
 		}
 	}
 
 	return false
 }
 
-func Disassemble(buf *[]byte) string {
+func Disassemble(buf *[]byte) []BasicBlock {
+	blocks := []BasicBlock{}
+
 	// Initialize instance of capstone engine using nasty Cgo bindings
 	engine, err := gapstone.New(gapstone.CS_ARCH_ARM, gapstone.CS_MODE_ARM)
 	if err != nil {
@@ -69,12 +71,28 @@ func Disassemble(buf *[]byte) string {
 	engine.SetOption(gapstone.CS_OPT_DETAIL, gapstone.CS_OPT_ON)
 
 	// DisasmIter()'s implementation seems a little goroutine happy, but fuck it
+	var bag []gapstone.Instruction
+	var addr uint
+	var length uint
+
 	for instruction := range engine.DisasmIter(*buf, 0x0) {
-		fmt.Printf("[*] <0x%08x>: %s %s\n", instruction.Address, instruction.Mnemonic, instruction.OpStr)
-		isControlFlowInstruction(&instruction)
+		length++
+		if addr == 0 {
+			addr = instruction.Address
+		}
+		bag = append(bag, instruction)
+		// fmt.Printf("[*] <0x%08x>: %s %s\n", instruction.Address, instruction.Mnemonic, instruction.OpStr)
+		// confused what determines a block, so essentially
+		// I grouped up everything until a control flow happens, kind of makes sense
+		// but also iffy on how ROP works
+		if isControlFlowInstruction(&instruction) {
+			blocks = append(blocks, BasicBlock{addr, length, bag, nil})
+			addr = 0
+			length = 0
+		}
 	}
 
-	return "gay"
+	return blocks
 }
 
 type BasicBlock struct {
