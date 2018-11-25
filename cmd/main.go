@@ -3,8 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 
-	"../pkg/executable"
+	"../pkg/parser"
+	"../pkg/rop"
 )
 
 var in = flag.String("input", "./test/stack0.dms", "ARM32 Binary file input")
@@ -15,17 +17,18 @@ func main() {
 	flag.Parse()
 
 	// Parse executable
-	blocks, err := executable.Parse(*in)
+	blocks, err := parser.Parse(*in)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	// fmt.Printf("Trophy found %d blocks\n", len(blocks))
+
+	gadgets, err := rop.FindGadgets(blocks)
 	if err != nil {
 		// Log failure
 	}
-	fmt.Printf("Trophy found %d blocks\n", len(blocks))
-
-	// gadgets, err := rop.FindGadgets(blocks)
-	// if err != nil {
-	// Log failure
-	// }
 	//
-	//// Allow further refinement of search, generate automatic chain, or output all rop
-	//fmt.Println(gadgets)
+	// Allow further refinement of search, generate automatic chain, or output all rop
+	fmt.Println(len(gadgets))
 }
