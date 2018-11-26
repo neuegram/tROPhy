@@ -24,15 +24,14 @@ func setUpGadgets(arch ARCH) ([]Gadget, error) {
 		// All ARM instructions are same size/alignment
 		const ARMSize = 4
 		const ARMAlign = 4
-		// ret := Gadget{"ret", `(?m)\xc0\x03\x5f\xd6`, ARMSize, ARMAlign}
-		// bx := Gadget{"bx", `(?m)[\x10-\x19\x1e]\xff\x2f\xe1`, ARMSize, ARMAlign}
+		ret := Gadget{"ret", `\xc0\x03\x5f\xd6`, ARMSize, ARMAlign}
+		bx := Gadget{"bx", `[\x10-\x19\x1e]\xff\x2f\xe1`, ARMSize, ARMAlign}
 		blx := Gadget{"blx", "[\x30-\x39\x3e]\xff\x2f\xe1", ARMSize, ARMAlign}
-		// ldm := Gadget{"ldm", `(?m)[\x00-\xff][\x80-\xff][\x10-\x1e\x30-\x3e\x50-\x5e\x70-\x7e\x90-\x9e\xb0-\xbe\xd0-\xde\xf0-\xfe][\xe8\xe9]`, ARMSize, ARMAlign}
-		// svc := Gadget{"svc", `(?m)[\x00-\xff]{3}\xef`, ARMSize, ARMAlign}
+		ldm := Gadget{"ldm", `[\x00-\xff][\x80-\xff][\x10-\x1e\x30-\x3e\x50-\x5e\x70-\x7e\x90-\x9e\xb0-\xbe\xd0-\xde\xf0-\xfe][\xe8\xe9]`, ARMSize, ARMAlign}
+		svc := Gadget{"svc", `[\x00-\xff]{3}\xef`, ARMSize, ARMAlign}
 
 		// add gadgets together
-		// gadgets = append(gadgets, ret, bx, blx, ldm, svc)
-		gadgets = append(gadgets, blx)
+		gadgets = append(gadgets, ret, bx, blx, ldm, svc)
 	} else {
 		return nil, errors.New("Architecture not supported")
 	}
@@ -65,6 +64,7 @@ func FindGadgets(blocks []parser.BasicBlock, arch ARCH) ([]Gadget, error) {
 			re := pcre.MustCompile(gadget.pattern, 0)
 			match := re.Matcher(block.Raw, 0)
 			if match.Matches() {
+				fmt.Println(gadget.name)
 				fmt.Println(match.Group(0))
 			}
 
