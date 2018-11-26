@@ -3,9 +3,10 @@ package rop
 import (
 	"errors"
 	"fmt"
-	"os"
 
 	"../../pkg/parser"
+	"github.com/bnagy/gapstone"
+	"github.com/glenn-brown/golang-pkg-pcre/src/pkg/pcre"
 )
 
 // ARCH - type to determine arch
@@ -23,14 +24,15 @@ func setUpGadgets(arch ARCH) ([]Gadget, error) {
 		// All ARM instructions are same size/alignment
 		const ARMSize = 4
 		const ARMAlign = 4
-		ret := Gadget{[]byte("\xc0\x03\x5f\xd6"), ARMSize, ARMAlign}
-		bx := Gadget{[]byte("[\x10-\x19\x1e]{1}\xff\x2f\xe1"), ARMSize, ARMAlign}
-		blx := Gadget{[]byte("[\x30-\x39\x3e]{1}\xff\x2f\xe1"), ARMSize, ARMAlign}
-		ldm := Gadget{[]byte("[\x00-\xff][\x80-\xff][\x10-\x1e\x30-\x3e\x50-\x5e\x70-\x7e\x90-\x9e\xb0-\xbe\xd0-\xde\xf0-\xfe][\xe8\xe9]"), ARMSize, ARMAlign}
-		svc := Gadget{[]byte("\x00-\xff]{3}\xef"), ARMSize, ARMAlign}
+		// ret := Gadget{"ret", `(?m)\xc0\x03\x5f\xd6`, ARMSize, ARMAlign}
+		// bx := Gadget{"bx", `(?m)[\x10-\x19\x1e]\xff\x2f\xe1`, ARMSize, ARMAlign}
+		blx := Gadget{"blx", "[\x30-\x39\x3e]\xff\x2f\xe1", ARMSize, ARMAlign}
+		// ldm := Gadget{"ldm", `(?m)[\x00-\xff][\x80-\xff][\x10-\x1e\x30-\x3e\x50-\x5e\x70-\x7e\x90-\x9e\xb0-\xbe\xd0-\xde\xf0-\xfe][\xe8\xe9]`, ARMSize, ARMAlign}
+		// svc := Gadget{"svc", `(?m)[\x00-\xff]{3}\xef`, ARMSize, ARMAlign}
 
 		// add gadgets together
-		gadgets = append(gadgets, ret, bx, blx, ldm, svc)
+		// gadgets = append(gadgets, ret, bx, blx, ldm, svc)
+		gadgets = append(gadgets, blx)
 	} else {
 		return nil, errors.New("Architecture not supported")
 	}
@@ -40,25 +42,41 @@ func setUpGadgets(arch ARCH) ([]Gadget, error) {
 
 // FindGadgets - finds gadgets in the binary for specified architecture
 func FindGadgets(blocks []parser.BasicBlock, arch ARCH) ([]Gadget, error) {
-
+	var engine gapstone.Engine
 	gadgets, err := setUpGadgets(arch)
-
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		panic(err)
 	}
 
-	fmt.Println(gadgets)
+	if arch == ARM {
+		engine, err = gapstone.New(gapstone.CS_ARCH_ARM, gapstone.CS_MODE_ARM)
+		if err != nil {
+			panic(err)
+		}
+		engine.SetOption(gapstone.CS_OPT_DETAIL, gapstone.CS_OPT_ON)
 
-	for i := 0; i < len(blocks); i++ {
-		// fmt.Println(blocks[i].StartAddress)
+	} else {
+		panic(errors.New("Architecture not supported"))
+	}
+
+	for _, block := range blocks {
+		for _, gadget := range gadgets {
+			// Go's regex is fucking dumb as shit and can't do ASCII/Bytes
+			re := pcre.MustCompile(gadget.pattern, 0)
+			match := re.Matcher(block.Raw, 0)
+			if match.Matches() {
+				fmt.Println(match.Group(0))
+			}
+
+		}
 	}
 	return nil, nil
 
 }
 
 type Gadget struct {
-	binary    []byte
+	name      string
+	pattern   string
 	size      uint
 	alignment uint
 }

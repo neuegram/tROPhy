@@ -80,6 +80,7 @@ func dissemble(buf *[]byte) []BasicBlock {
 	// DisasmIter()'s implementation seems a little goroutine happy, but fuck it
 	var bag []gapstone.Instruction
 	var tags []TaintTag
+	var bytes []byte
 	var addr uint
 	var length uint
 	var size uint
@@ -91,9 +92,13 @@ func dissemble(buf *[]byte) []BasicBlock {
 		}
 		bag = append(bag, instruction)
 		tags = append(tags, calculateTaintTag(&instruction))
+		bytes = append(bytes, instruction.Bytes[:]...)
 		// fmt.Printf("[*] <0x%08x>: %s %s\n", instruction.Address, instruction.Mnemonic, instruction.OpStr)
+
 		if isControlFlowInstruction(&instruction) {
-			blocks = append(blocks, BasicBlock{addr, length, size, bag, nil})
+			blocks = append(blocks, BasicBlock{addr, length, size, bag, bytes, nil})
+			bag = []gapstone.Instruction{}
+			bytes = []byte("")
 			addr = 0
 			length = 0
 			size = 0
@@ -109,6 +114,7 @@ type BasicBlock struct {
 	Length       uint
 	Size         uint
 	Instructions []gapstone.Instruction
+	Raw          []byte
 	Tags         []TaintTag
 }
 

@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
 
 	"../pkg/parser"
 	"../pkg/rop"
@@ -19,14 +18,13 @@ func main() {
 	// Parse executable
 	blocks, err := parser.Parse(*in)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		panic(err)
 	}
 	// fmt.Printf("Trophy found %d blocks\n", len(blocks))
 
 	gadgets, err := rop.FindGadgets(blocks, rop.ARM)
 	if err != nil {
-		// Log failure
+		panic(err)
 	}
 	//
 	// Allow further refinement of search, generate automatic chain, or output all rop
