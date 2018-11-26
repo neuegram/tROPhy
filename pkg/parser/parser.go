@@ -3,7 +3,6 @@ package parser
 import (
 	"bufio"
 	"debug/elf"
-	"fmt"
 	"io"
 
 	"github.com/bnagy/gapstone"
@@ -50,8 +49,8 @@ func calculateTaintTag(instruction *gapstone.Instruction) TaintTag {
 func isControlFlowInstruction(instruction *gapstone.Instruction) bool {
 	for group := range instruction.Groups {
 		if group == gapstone.ARM_GRP_JUMP {
-			fmt.Println("ARM_GRP_JUMP")
-			fmt.Println(instruction.Mnemonic)
+			// fmt.Println("ARM_GRP_JUMP")
+			// fmt.Println(instruction.Mnemonic)
 			return true
 		}
 	}

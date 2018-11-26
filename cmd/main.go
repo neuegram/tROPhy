@@ -24,7 +24,7 @@ func main() {
 	}
 	// fmt.Printf("Trophy found %d blocks\n", len(blocks))
 
-	gadgets, err := rop.FindGadgets(blocks)
+	gadgets, err := rop.FindGadgets(blocks, rop.ARM)
 	if err != nil {
 		// Log failure
 	}
