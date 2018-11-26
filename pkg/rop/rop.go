@@ -1,6 +1,7 @@
 package rop
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -31,8 +32,7 @@ func setUpGadgets(arch ARCH) ([]Gadget, error) {
 		// add gadgets together
 		gadgets = append(gadgets, ret, bx, blx, ldm, svc)
 	} else {
-		fmt.Println("architecture not supported")
-		return nil, nil
+		return nil, errors.New("Architecture not supported")
 	}
 
 	return gadgets, nil
