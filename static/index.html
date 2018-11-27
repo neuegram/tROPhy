@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Trophy</title>
+
+    <!-- Bootstrap -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+        crossorigin="anonymous">
+
+    <link rel="stylesheet" href="style.css">
+
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+
+    <div class="container p-y-1">
+        <div class="row">
+            <div class="col-md-12 ">
+                <h1>Trophy</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 ">
+                <div class="form-group inputDnD">
+                    <label class="sr-only" for="inputFile">File Upload</label>
+                    <input type="file" class="form-control-file text-primary font-weight-bold" id="inputFile" accept="image/*"
+                        onchange="readUrl(this)" data-title="Drag and drop a file">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <button type="button" class="btn btn-warning btn-block" onclick="console.log('Analyze File')">
+                Find Gadgets</button>
+        </div>
+        <div class="row">
+            <h1 style="text-align: left">Gadgets:</h1>
+        </div>
+        <div class="row">
+
+            <textarea rows="20" style="box-sizing: border-box; resize: none; width: 100%" disabled>Upload file and hit "Find Gadgets" to display gadgets here.
+            </textarea>
+        </div>
+    </div>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="
+                https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"> </script>
+    <!-- Include all compiled
+                plugins (below), or include individual files as needed -->
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+
+    <script>
+        function readUrl(input) {
+
+            if (input.files && input.files[0]) {
+                let reader = new FileReader();
+                reader.onload = (e) => {
+                    let imgData = e.target.result;
+                    let imgName = input.files[0].name;
+                    input.setAttribute("data-title", imgName);
+                    console.log(e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+
+        }
+    </script>
+</body>
+
+</html>
