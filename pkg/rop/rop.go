@@ -2,7 +2,6 @@ package rop
 
 import (
 	"errors"
-	"fmt"
 
 	"../../pkg/parser"
 	"github.com/bnagy/gapstone"
@@ -64,8 +63,8 @@ func FindGadgets(blocks []parser.BasicBlock, arch ARCH) ([]Gadget, error) {
 			re := pcre.MustCompile(gadget.pattern, 0)
 			match := re.Matcher(block.Raw, 0)
 			if match.Matches() {
-				fmt.Println(gadget.name)
-				fmt.Println(match.Group(0))
+				// fmt.Println(gadget.name)
+				// fmt.Println(match.Group(0))
 			}
 
 		}

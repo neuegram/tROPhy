@@ -36,13 +36,13 @@
             <div class="col-md-12 ">
                 <div class="form-group inputDnD">
                     <label class="sr-only" for="inputFile">File Upload</label>
-                    <input type="file" class="form-control-file text-primary font-weight-bold" id="inputFile" accept="image/*"
+                    <input type="file" class="form-control-file text-primary font-weight-bold" id="inputFile" accept="*"
                         onchange="readUrl(this)" data-title="Drag and drop a file">
                 </div>
             </div>
         </div>
         <div class="row">
-            <button type="button" class="btn btn-warning btn-block" onclick="console.log('Analyze File')">
+            <button type="button" class="btn btn-warning btn-block" onclick="convert()">
                 Find Gadgets</button>
         </div>
         <div class="row">
@@ -77,6 +77,73 @@
                 reader.readAsDataURL(input.files[0]);
             }
 
+        }
+
+
+        function convert() {
+            console.log("converting")
+            var file = document.querySelector('input[type="file"]').files[0];
+            var reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function () {
+                // console.log(reader.result);
+                binary = reader.result.split(',')[1];;
+                d = {
+                    "binary": binary
+                }
+                $.ajax({
+                    type: "POST",
+                    url: "/analyze",
+                    data: {
+                        file: JSON.stringify(d) // various ways to store the ID, you can choose
+                    },
+
+                    success: function (data) {
+                        // POST was successful - do something with the response
+                        console.log('Server sent back: ' + data);
+                        $("textarea").val(data);
+                    },
+                    error: function (data) {
+                        // Server error, e.g. 404, 500, error
+                        alert(data.responseText);
+                    }
+                });
+            };
+            reader.onerror = function (error) {
+                console.log('Error: ', error);
+            };
+
+        }
+
+        /**
+         * sends a request to the specified url from a form. this will change the window location.
+         * @param {string} path the path to send the post request to
+         * @param {object} params the paramiters to add to the url
+         * @param {string} [method=post] the method to use on the form
+         */
+
+        function post(path, params, method) {
+            method = method || "post"; // Set method to post by default if not specified.
+
+            // The rest of this code assumes you are not using a library.
+            // It can be made less wordy if you use one.
+            var form = document.createElement("form");
+            form.setAttribute("method", method);
+            form.setAttribute("action", path);
+
+            for (var key in params) {
+                if (params.hasOwnProperty(key)) {
+                    var hiddenField = document.createElement("input");
+                    hiddenField.setAttribute("type", "hidden");
+                    hiddenField.setAttribute("name", key);
+                    hiddenField.setAttribute("value", params[key]);
+
+                    form.appendChild(hiddenField);
+                }
+            }
+
+            document.body.appendChild(form);
+            form.submit();
         }
     </script>
 </body>
