@@ -7,14 +7,12 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/neuegram/tROPhy/pkg/parser"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
-
-	"../pkg/parser"
-	"../pkg/rop"
 )
 
 type binary struct {
@@ -68,35 +66,12 @@ func analyze(writer http.ResponseWriter, request *http.Request) {
 	// fmt.Println(request.FormValue("file"))
 	// writer.Write("Hello")
 	// flag.Parse()
-	blocks, err := parser.Parse(path)
-	if err != nil {
-		panic(err)
-	}
+	blocks, _ := parser.Parse(path)
 	// fmt.Printf("Trophy found %d blocks\n", len(blocks))
 
-	_, err = rop.FindGadgets(blocks, rop.ARM)
-	if err != nil {
-		panic(err)
+	for _, bb := range *blocks {
+		fmt.Fprintf(writer, bb.String())
 	}
-	hack, _ := exec.Command("python", "ROPgadget/ROPgadget.py", "--binary", path).CombinedOutput()
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	fmt.Fprintf(writer, string(hack))
 	exec.Command("rm", path).Run()
 
 }
-
-// func main() {
-// 	http.HandleFunc("/", handler)
-// 	http.ListenAndServe(":8080", nil)
-// Parse command-line flags
-// flag.Parse()
-
-// Parse executable
-
-//
-// Allow further refinement of search, generate automatic chain, or output all rop
-// fmt.Println(len(gadgets))
-// }
