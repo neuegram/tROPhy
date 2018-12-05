@@ -7,12 +7,13 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/neuegram/tROPhy/pkg/parser"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
+
+	"../pkg/parser"
 )
 
 type binary struct {
@@ -71,6 +72,7 @@ func analyze(writer http.ResponseWriter, request *http.Request) {
 
 	for _, bb := range *blocks {
 		fmt.Fprintf(writer, bb.String())
+		fmt.Fprintf(writer, "\n")
 	}
 	exec.Command("rm", path).Run()
 
